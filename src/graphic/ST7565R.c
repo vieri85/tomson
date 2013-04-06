@@ -33,7 +33,7 @@ void ST7565R_GPIO_Init(void)
 #if SPI_MODE==SOFTWARE
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = ST7565R_RS | ST7565R_RST | ST7565R_SID
-            | ST7565R_SCLK | ST7565R_CS | ST7565R_BLK;
+            | ST7565R_SCLK | ST7565R_CS ;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(ST7565R_PORT, &GPIO_InitStructure);
@@ -45,12 +45,12 @@ void ST7565R_GPIO_Init(void)
     /* Configure SPI1 pins: SCK, MISO and MOSI -------------------------------*/
     GPIO_InitStructure.GPIO_Pin = ST7565R_SCLK | ST7565R_SID;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_Init(ST7565R_PORT, &GPIO_InitStructure);
 
 
-    GPIO_InitStructure.GPIO_Pin = ST7565R_CS |ST7565R_BLK|ST7565R_RS | ST7565R_RST;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Pin = ST7565R_CS | ST7565R_RS | ST7565R_RST;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
     GPIO_Init(ST7565R_PORT, &GPIO_InitStructure);
 
 
@@ -98,29 +98,37 @@ void ST7565R_SPI_Writebyte(unsigned char ucByte)
 
 #if SPI_X==1
     while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET)
+    {
         ;
-    SPI_I2S_SendData(SPI1, ucByte);
+    }
+    SPI_SendData8(SPI1, ucByte);
     while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET)
+    {
         ;
-    SPI_I2S_ReceiveData(SPI1);
+    }
+    SPI_ReceiveData8(SPI1);
 #endif
 
 #if SPI_X==2
     while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET)
+    {
         ;
-    SPI_I2S_SendData(SPI2, ucByte);
+    }
+    SPI_SendData8(SPI2, ucByte);
     while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_RXNE) == RESET)
-        ;
-    SPI_I2S_ReceiveData(SPI2);
+    {
+    	;
+    }
+    SPI_ReceiveData8(SPI2);
 #endif
 
 #if SPI_X==3
     while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_TXE) == RESET)
         ;
-    SPI_I2S_SendData(SPI3, ucByte);
+    SPI_SendData8(SPI3, ucByte);
     while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_RXNE) == RESET)
         ;
-    SPI_I2S_ReceiveData(SPI3);
+    SPI_ReceiveData8(SPI3);
 #endif
 }
 
@@ -222,7 +230,6 @@ void ST7565R_Init(void)
     ST7565R_SID_L;
     ST7565R_SCLK_L;
     ST7565R_CS_L;
-    ST7565R_BLK_L; /*开背光*/
 
     ST7565R_Delay(500); /*延时等待上电*/
 

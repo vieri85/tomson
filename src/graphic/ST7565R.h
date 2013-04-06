@@ -42,12 +42,13 @@
 //
 //*****************************************************************************
 
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_flash.h"
-#include "stm32f10x_spi.h"
-#include "misc.h"
+#include "stm32f0xx_gpio.h"
+#include "stm32f0xx_rcc.h"
+#include "stm32f0xx_flash.h"
+#include "stm32f0xx_spi.h"
 
+#define u8 uint8_t
+#define u32 uint32_t
 //
 //don't change it
 //
@@ -57,7 +58,7 @@
 //
 // use SPI mode ,set HARDWARE or SOFTWARE
 //
-#define SPI_MODE                HARDWARE
+#define SPI_MODE                SOFTWARE
 
 #define SPI_X                   2
 
@@ -66,13 +67,13 @@
 //! ST7565R Device config, here must be configured before use the API.
 //
 //*****************************************************************************
-#define ST7565R_RS       GPIO_Pin_10	//Fira_ A0: low - config data, high-graphic data
-#define ST7565R_RST      GPIO_Pin_11
-#define ST7565R_SID      GPIO_Pin_15
-#define ST7565R_SCLK     GPIO_Pin_13
-#define ST7565R_CS       GPIO_Pin_14	//Fira_ chip select will be not use
+#define ST7565R_RS       GPIO_Pin_1	//Fira_ A0: low - config data, high-graphic data
+#define ST7565R_RST      GPIO_Pin_0
+#define ST7565R_SID      GPIO_Pin_7
+#define ST7565R_SCLK     GPIO_Pin_5
+#define ST7565R_CS       GPIO_Pin_2		//Fira_ chip select will be not use (temporary pin2)
 #define ST7565R_BLK      GPIO_Pin_12
-#define ST7565R_PORT     GPIOB
+#define ST7565R_PORT     GPIOA
 
 
 

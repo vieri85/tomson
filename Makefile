@@ -39,7 +39,7 @@ SRC = src/main.c \
 	Utilities/STM32F0-Discovery/stm32f0_discovery.c \
 	Libraries/STM32F0xx_StdPeriph_Driver/src/stm32f0xx_gpio.c \
 	Libraries/STM32F0xx_StdPeriph_Driver/src/stm32f0xx_rcc.c \
-	src/graphic/ST7565R.c 
+	src/graphic/ST7565R.c \
 
 SRCSASM := 	$(wildcard */*/*/*/*/*/*/*/*.s) \
 	$(wildcard */*/*/*/*/*/*/*.s) \
