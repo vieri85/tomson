@@ -25,13 +25,21 @@ OBJECT_DIR = Debug
 BIN_DIR = $(OBJECT_DIR)
 
 # Define sources and objects
-SRC := $(wildcard */*/*/*/*/*/*/*.c) \
-	$(wildcard */*/*/*/*/*/*.c) \
-	$(wildcard */*/*/*/*/*.c) \
-	$(wildcard */*/*/*/*.c) \
-	$(wildcard */*/*/*.c) \
-	$(wildcard */*/*.c) \
-	$(wildcard */*.c)
+#SRC := $(wildcard */*/*/*/*/*/*/*.c) \
+#	$(wildcard */*/*/*/*/*/*.c) \
+#	$(wildcard */*/*/*/*/*.c) \
+#	$(wildcard */*/*/*/*.c) \
+#	$(wildcard */*/*/*.c) \
+#	$(wildcard */*/*.c) \
+#	$(wildcard */*.c)
+SRC = src/main.c \
+	src/system_stm32f0xx.c \
+	src/stm32f0xx_it.c \
+	src/tiny_printf.c \
+	Utilities/STM32F0-Discovery/stm32f0_discovery.c \
+	Libraries/STM32F0xx_StdPeriph_Driver/src/stm32f0xx_gpio.c \
+	Libraries/STM32F0xx_StdPeriph_Driver/src/stm32f0xx_rcc.c \
+
 SRCSASM := 	$(wildcard */*/*/*/*/*/*/*/*.s) \
 	$(wildcard */*/*/*/*/*/*/*.s) \
 	$(wildcard */*/*/*/*/*/*.s) \

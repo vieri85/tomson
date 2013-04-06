@@ -80,7 +80,7 @@ int main(void)
   GPIO_InitTypeDef        GPIO_InitStructure;
 
   /* TODO - Add your application code here */
-  SysTick_Config(4800);  /* 0.1 ms = 100us if clock frequency 12 MHz */
+  SysTick_Config(6800);  /* 0.1 ms = 100us if clock frequency 12 MHz */
 
   SystemCoreClockUpdate();
   ii = SystemCoreClock;    /* This is a way to read the System core clock */
