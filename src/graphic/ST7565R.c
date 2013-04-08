@@ -16,6 +16,9 @@
 #include "ST7565R_Font.h"
 #include "ST7565R_Picture.h"
 
+#define DEBUG_PIN_0 GPIO_Pin_0
+#define DEBUG_PIN_1 GPIO_Pin_1
+#define DEBUG_PORT GPIOB
 enum ST7565R_CMD_DAT
 {
     cmd, dat
@@ -35,7 +38,8 @@ void ST7565R_GPIO_Init(void)
     GPIO_InitStructure.GPIO_Pin = ST7565R_RS | ST7565R_RST | ST7565R_SID
             | ST7565R_SCLK | ST7565R_CS ;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_Init(ST7565R_PORT, &GPIO_InitStructure);
 
 #else //SPI_MODE==HARDWARE
@@ -148,7 +152,7 @@ void ST7565R_Delay(u32 uTime)
     u32 i, j;
 
     for (i = 0; i < uTime; i++)
-        for (j = 0; j < 10; j++)
+        for (j = 0; j < 1040; j++)
             ;
 }
 
@@ -231,7 +235,10 @@ void ST7565R_Init(void)
     ST7565R_SCLK_L;
     ST7565R_CS_L;
 
+    GPIO_SetBits(DEBUG_PORT, DEBUG_PIN_1);
     ST7565R_Delay(500); /*延时等待上电*/
+	GPIO_ResetBits(DEBUG_PORT, DEBUG_PIN_1);
+
 
     ST7565R_GPIO_Init();
     ST7565R_RST_L; /*复位*/

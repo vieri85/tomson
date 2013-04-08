@@ -18,7 +18,7 @@ RM=rm -rf
 LINKER_FLAGS=-lm -mthumb -mcpu=cortex-m0  -Wl,--gc-sections -T$(LINK_SCRIPT) -static  -Wl,--start-group -lc -lm -Wl,--end-group -Wl,-cref "-Wl,-Map=$(BIN_DIR)/Zapper_Start.map" -Wl,--defsym=malloc_getpagesize_P=0x1000
 LINK_SCRIPT="stm32_flash.ld"
 ASSEMBLER_FLAGS=-c -g -O0 -mcpu=cortex-m0  -mthumb  -x assembler-with-cpp  -Isrc -ILibraries\CMSIS\Include -ILibraries\CMSIS\Device\ST\STM32F0xx\Include -ILibraries\STM32F0xx_StdPeriph_Driver\inc -IUtilities\STM32F0-Discovery
-COMPILER_FLAGS=-c -g -mcpu=cortex-m0  -O0 -Wall -ffunction-sections -fdata-sections -mthumb -D"USE_STM32F0_DISCOVERY" -D"HSI_VALUE=8000000" -D"STM32F0XX" -D"USE_STDPERIPH_DRIVER"   -Isrc -ILibraries\CMSIS\Include -ILibraries\CMSIS\Device\ST\STM32F0xx\Include -ILibraries\STM32F0xx_StdPeriph_Driver\inc -IUtilities\STM32F0-Discovery 
+COMPILER_FLAGS=-c -g -mcpu=cortex-m0  -O0 -Wall -ffunction-sections -fdata-sections -mthumb -D"USE_STM32F0_DISCOVERY" -D"HSI_VALUE=8000000" -D"STM32F0XX" -D"USE_STDPERIPH_DRIVER"   -Isrc -ILibraries\CMSIS\Include -ILibraries\CMSIS\Device\ST\STM32F0xx\Include -ILibraries\STM32F0xx_StdPeriph_Driver\inc -IUtilities\STM32F0-Discovery -Isrc\graphic
 
 # Define output directory
 OBJECT_DIR = Debug

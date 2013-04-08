@@ -60,7 +60,7 @@
 //
 #define SPI_MODE                SOFTWARE
 
-#define SPI_X                   2
+#define SPI_X                   1
 
 //*****************************************************************************
 //
@@ -102,14 +102,14 @@
 //
 //*****************************************************************************
 
-void ST7565R_Init(void);
-void ST7565R_Clear_Screen(void);
-void ST7565R_Display_Num(u8 ucRow, u8 ucColumn, u8 ucNum);
-void ST7565R_Display_ASCII(u8 ucRow, u8 ucColumn, u8 ucAscii);
-void ST7565R_Display_CN(u8 ucRow, u8 ucColumn, u8 *pucData);
-void ST7565R_Display_16x32_Num(u8 ucRow, u8 ucColumn, u8 ucNum);
-void ST7565R_Display_16x32_Num_Reverse(u8 ucRow, u8 ucColumn, u8 ucNum);
-void ST7565R_Display_Picture(u8 *pucData);
+extern void ST7565R_Init(void);
+extern void ST7565R_Clear_Screen(void);
+extern void ST7565R_Display_Num(u8 ucRow, u8 ucColumn, u8 ucNum);
+extern void ST7565R_Display_ASCII(u8 ucRow, u8 ucColumn, u8 ucAscii);
+extern void ST7565R_Display_CN(u8 ucRow, u8 ucColumn, u8 *pucData);
+extern void ST7565R_Display_16x32_Num(u8 ucRow, u8 ucColumn, u8 ucNum);
+extern void ST7565R_Display_16x32_Num_Reverse(u8 ucRow, u8 ucColumn, u8 ucNum);
+extern void ST7565R_Display_Picture(u8 *pucData);
 
 extern unsigned char zhong[];
 extern unsigned char ST7565R_Picture[];

@@ -25,7 +25,7 @@
 #include <stddef.h>
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_gpio.h"
-
+#include "ST7565R.h"
 /* Private typedef */
 
 /* Private define  */
@@ -33,10 +33,13 @@
 #define LED_PORT GPIOC
 #define LED1 GPIO_Pin_9
 #define LED2 GPIO_Pin_8
+#define DEBUG_PIN_0 GPIO_Pin_0
+#define DEBUG_PIN_1 GPIO_Pin_1
+
 
 #define KEY_PORT GPIOA
 #define KEY GPIO_Pin_0
-
+#define DEBUG_PORT GPIOB
 /* Private macro */
 
 /* Private variables */
@@ -48,6 +51,56 @@
 /* Global variables */
 uint32_t timer=0;
 uint8_t  timerFlag=0;
+
+inline void init_gpio(void)
+{
+	  GPIO_InitTypeDef        GPIO_InitStructure;
+	  /* GPIOA-C Periph clock enable */
+	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
+	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+	  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
+
+	  /* Configure
+	   * PA0 USER Button input
+	   * */
+	  GPIO_InitStructure.GPIO_Pin = KEY;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	  GPIO_Init(KEY_PORT, &GPIO_InitStructure);
+
+	  /* Configure PC8 and PC9 in output pushpull mode
+	   * PC8 = LD3 Green LED
+	   * PC9 = LD4 Blue LED
+	   * */
+	  GPIO_InitStructure.GPIO_Pin = LED1 | LED2;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	  GPIO_Init(LED_PORT, &GPIO_InitStructure);
+
+	  GPIO_SetBits(LED_PORT, LED1);
+	  GPIO_ResetBits(LED_PORT, LED1);
+	  LED_PORT->BSRR = LED2;
+	  LED_PORT->BRR = LED2;
+
+}
+
+
+void debug_pin_init(void)
+{
+	  GPIO_InitTypeDef        GPIO_InitStructure;
+	  GPIO_InitStructure.GPIO_Pin = DEBUG_PIN_0 | DEBUG_PIN_1;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	  GPIO_Init(DEBUG_PORT, &GPIO_InitStructure);
+	  GPIO_ResetBits(DEBUG_PORT, DEBUG_PIN_0);
+	  GPIO_ResetBits(DEBUG_PORT, DEBUG_PIN_1);
+}
 
 /**
 **===========================================================================
@@ -77,50 +130,25 @@ void SysTick_Handler(void)
 int main(void)
 {
   uint32_t ii = 0;
-  GPIO_InitTypeDef        GPIO_InitStructure;
+
 
   /* TODO - Add your application code here */
-  SysTick_Config(6800);  /* 0.1 ms = 100us if clock frequency 12 MHz */
+  SysTick_Config(800);  /* 0.1 ms = 100us if clock frequency 12 MHz */
 
   SystemCoreClockUpdate();
   ii = SystemCoreClock;    /* This is a way to read the System core clock */
   ii = 0;
 
-  /* GPIOA-C Periph clock enable */
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
 
-  /* Configure
-   * PA0 USER Button input
-   * */
-  GPIO_InitStructure.GPIO_Pin = KEY;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(KEY_PORT, &GPIO_InitStructure);
-
-  /* Configure PC8 and PC9 in output pushpull mode
-   * PC8 = LD3 Green LED
-   * PC9 = LD4 Blue LED
-   * */
-  GPIO_InitStructure.GPIO_Pin = LED1 | LED2;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(LED_PORT, &GPIO_InitStructure);
-
-  GPIO_SetBits(LED_PORT, LED1);
-  GPIO_ResetBits(LED_PORT, LED1);
-  LED_PORT->BSRR = LED2;
-  LED_PORT->BRR = LED2;
+  init_gpio();
+  debug_pin_init();
+  ST7565R_Init();
 
   while (1)
   {
 	  if (timerFlag)
 	  {
+		  ST7565R_Display_16x32_Num(10, 10, 5);
 		  timerFlag = 0;
 		  ii++;
 
@@ -128,6 +156,7 @@ int main(void)
 		  if (ii == 1)
 		  {
 			  LED_PORT->BSRR = LED1;
+			 ST7565R_Display_ASCII(3, 2, 0x55);
 		  }
 		  else if (ii == 2)
 		  {
@@ -150,3 +179,5 @@ int main(void)
   }
   return 0;
 }
+
+
