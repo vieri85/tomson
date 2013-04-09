@@ -23,9 +23,11 @@
 
 /* Includes */
 #include <stddef.h>
+#include "stm32f0xx_usart.h"
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_gpio.h"
 #include "ST7565R.h"
+
 /* Private typedef */
 
 /* Private define  */
@@ -35,7 +37,6 @@
 #define LED2 GPIO_Pin_8
 #define DEBUG_PIN_0 GPIO_Pin_0
 #define DEBUG_PIN_1 GPIO_Pin_1
-
 
 #define KEY_PORT GPIOA
 #define KEY GPIO_Pin_0
@@ -86,6 +87,19 @@ inline void init_gpio(void)
 	  LED_PORT->BSRR = LED2;
 	  LED_PORT->BRR = LED2;
 
+	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	  GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
 
@@ -130,6 +144,16 @@ void SysTick_Handler(void)
 int main(void)
 {
   uint32_t ii = 0;
+  uint8_t letter=35;
+  static RCC_ClocksTypeDef RCC_Clocks;
+  USART_InitTypeDef USART_2_InitStruct;
+  USART_2_InitStruct.USART_BaudRate = 4800;
+  USART_2_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_2_InitStruct.USART_WordLength = USART_WordLength_8b;
+  USART_2_InitStruct.USART_StopBits = USART_StopBits_1;
+  USART_2_InitStruct.USART_Parity = USART_Parity_No ;
+  USART_2_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+
 
 
   /* TODO - Add your application code here */
@@ -144,6 +168,17 @@ int main(void)
   debug_pin_init();
   ST7565R_Init();
 
+  RCC_GetClocksFreq(&RCC_Clocks);
+
+  //init for UART
+  /*****/
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2,ENABLE);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA,ENABLE);
+  GPIO_PinAFConfig(GPIOA, 2, GPIO_AF_1);
+  GPIO_PinAFConfig(GPIOA, 3, GPIO_AF_1);
+  USART_Init(USART2, &USART_2_InitStruct);
+  USART_Cmd(USART2, ENABLE);
+  /****/
   while (1)
   {
 	  if (timerFlag)
@@ -151,17 +186,24 @@ int main(void)
 		  ST7565R_Display_16x32_Num(10, 10, 5);
 		  timerFlag = 0;
 		  ii++;
-
+		  letter++;
+		  if (letter>70)
+		  letter=35;
+		  ST7565R_Display_ASCII(3, 2, letter);
+		  USART_SendData(USART2, 36);
 		  /* Toggle LED1 */
 		  if (ii == 1)
 		  {
+
 			  LED_PORT->BSRR = LED1;
-			 ST7565R_Display_ASCII(3, 2, 0x55);
+			  USART_SendData(USART2, 17);
+
 		  }
 		  else if (ii == 2)
 		  {
 			  ii = 0;
 			  LED_PORT->BRR = LED1;
+			  USART_SendData(USART2, 40);
 		  }
 	  }
       if(GPIO_ReadInputDataBit(KEY_PORT, KEY))

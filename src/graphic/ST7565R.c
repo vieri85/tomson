@@ -36,7 +36,7 @@ void ST7565R_GPIO_Init(void)
 #if SPI_MODE==SOFTWARE
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = ST7565R_RS | ST7565R_RST | ST7565R_SID
-            | ST7565R_SCLK | ST7565R_CS ;
+            | ST7565R_SCLK;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -53,7 +53,7 @@ void ST7565R_GPIO_Init(void)
     GPIO_Init(ST7565R_PORT, &GPIO_InitStructure);
 
 
-    GPIO_InitStructure.GPIO_Pin = ST7565R_CS | ST7565R_RS | ST7565R_RST;
+    GPIO_InitStructure.GPIO_Pin = ST7565R_RS | ST7565R_RST;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
     GPIO_Init(ST7565R_PORT, &GPIO_InitStructure);
 
@@ -173,7 +173,6 @@ void ST7565R_Write(u8 ucDatOrCmd, u8 ucData)
 #if SPI_MODE==SOFTWARE
     u8 i, uTime;
 
-    ST7565R_CS_L;
     if (ucDatOrCmd == ST7565R_DAT) /* DAT */
     {
         ST7565R_RS_H;
@@ -202,7 +201,6 @@ void ST7565R_Write(u8 ucDatOrCmd, u8 ucData)
         ucData <<= 1;
     }
 #else  //HARDWARE
-    ST7565R_CS_L;
     if (ucDatOrCmd == ST7565R_DAT) /* DAT */
     {
         ST7565R_RS_H;
@@ -233,7 +231,6 @@ void ST7565R_Init(void)
     ST7565R_RST_L;
     ST7565R_SID_L;
     ST7565R_SCLK_L;
-    ST7565R_CS_L;
 
     GPIO_SetBits(DEBUG_PORT, DEBUG_PIN_1);
     ST7565R_Delay(500); /*延时等待上电*/
@@ -247,20 +244,23 @@ void ST7565R_Init(void)
     //
     //以下参数没有自己调整的必要
     //
-    ST7565R_Write(ST7565R_CMD, 0xe2); /*软复位*/
-    ST7565R_Write(ST7565R_CMD, 0x2c); /*升压步聚1*/
+    ST7565R_Write(ST7565R_CMD, 0xa3); /*软复位*/
+    ST7565R_Write(ST7565R_CMD, 0xa0); /*升压步聚1*/
     ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0x2e); /*升压步聚2*/
+    ST7565R_Write(ST7565R_CMD, 0xc0); /*升压步聚2*/
     ST7565R_Delay(5);
     ST7565R_Write(ST7565R_CMD, 0x2f); /*升压步聚3*/
     ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0x22); /*粗调对比度，可设置范围20～27*/
-    ST7565R_Write(ST7565R_CMD, 0x81); /*微调对比度*/
-    ST7565R_Write(ST7565R_CMD, 0x19); /*微调对比度的值，可设置范围0～63*/
-    ST7565R_Write(ST7565R_CMD, 0xa2); /*1/9偏压比（bias）*/
-    ST7565R_Write(ST7565R_CMD, 0xc8); /*行扫描顺序：从上到下*/
-    ST7565R_Write(ST7565R_CMD, 0xa0); /*列扫描顺序：从左到右*/
-    ST7565R_Write(ST7565R_CMD, 0x40); /*起始行：从第一行开始*/
+    ST7565R_Write(ST7565R_CMD, 0x81); /*粗调对比度，可设置范围20～27*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 0x27); /*微调对比度*/
+    ST7565R_Write(ST7565R_CMD, 0x24); /*微调对比度的值，可设置范围0～63*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 0xaf); /*1/9偏压比（bias）*/
+
+//    ST7565R_Write(ST7565R_CMD, 0xc8); /*行扫描顺序：从上到下*/
+//    ST7565R_Write(ST7565R_CMD, 0xa0); /*列扫描顺序：从左到右*/
+//    ST7565R_Write(ST7565R_CMD, 0x40); /*起始行：从第一行开始*/
     ST7565R_Write(ST7565R_CMD, 0xaf); /*开显示*/
 
 }
@@ -278,7 +278,7 @@ void ST7565R_Clear_Screen(void)
 
     for (i = 0; i < 4; i++)
     {
-        ST7565R_CS_L;
+
         ST7565R_Write(ST7565R_CMD, 0xb0 + i);
         ST7565R_Write(ST7565R_CMD, 0x10);
         ST7565R_Write(ST7565R_CMD, 0x00);
@@ -307,7 +307,7 @@ void ST7565R_Display_Num(u8 ucRow, u8 ucColumn, u8 ucNum)
     ucNum = ucNum * 16;
     for (i = 0; i < 2; i++)
     {
-        ST7565R_CS_L;
+
         //
         //set page address,设置行地址
         //
@@ -352,7 +352,7 @@ void ST7565R_Display_ASCII(u8 ucRow, u8 ucColumn, u8 ucAscii)
 
     for (i = 0; i < 2; i++)
     {
-        ST7565R_CS_L;
+
         //
         //set page address,设置行地址
         //
@@ -391,7 +391,7 @@ void ST7565R_Display_CN(u8 ucRow, u8 ucColumn, u8 *pucData)
 
     for (i = 0; i < 2; i++)
     {
-        ST7565R_CS_L;
+
         //
         //set page address,设置行地址
         //
@@ -433,7 +433,7 @@ void ST7565R_Display_16x32_Num(u8 ucRow, u8 ucColumn, u8 ucNum)
     ucNum = ucNum * 60;
     for (i = 0; i < 4; i++)
     {
-        ST7565R_CS_L;
+
         //
         //set page address,设置行地址
         //
@@ -475,7 +475,7 @@ void ST7565R_Display_16x32_Num_Reverse(u8 ucRow, u8 ucColumn, u8 ucNum)
     uiNum_Temp = ucNum * 60;
     for (i = 0; i < 4; i++)
     {
-        ST7565R_CS_L;
+
         //
         //set page address,设置行地址
         //
@@ -513,7 +513,7 @@ void ST7565R_Display_Picture(u8 *pucData)
 
     for (i = 0; i < 4; i++)
     {
-        ST7565R_CS_L;
+
         //
         //set page address,设置行地址
         //

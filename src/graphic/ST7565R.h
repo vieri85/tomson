@@ -71,7 +71,7 @@
 #define ST7565R_RST      GPIO_Pin_0
 #define ST7565R_SID      GPIO_Pin_7
 #define ST7565R_SCLK     GPIO_Pin_5
-#define ST7565R_CS       GPIO_Pin_2		//Fira_ chip select will be not use (temporary pin2)
+
 #define ST7565R_BLK      GPIO_Pin_12
 #define ST7565R_PORT     GPIOA
 
