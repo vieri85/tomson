@@ -43,15 +43,35 @@
 #define DEBUG_PORT GPIOB
 /* Private macro */
 
+#define BIT00	(1<<0)
+#define BIT01	(1<<1)
+#define BIT02	(1<<2)
+#define BIT03	(1<<3)
+#define BIT04	(1<<4)
+#define BIT05	(1<<5)
+#define BIT06	(1<<6)
+#define BIT07	(1<<7)
+#define BIT08	(1<<8)
+#define BIT09	(1<<9)
+#define BIT10	(1<<10)
+#define BIT11	(1<<11)
+#define BIT12	(1<<12)
+#define BIT13	(1<<13)
+#define BIT14	(1<<14)
+#define BIT15	(1<<15)
+
 /* Private variables */
 
 /* Private function prototypes */
+void init_general_gpio_UART(void);
 
 /* Private functions */
 
 /* Global variables */
 uint32_t timer=0;
 uint8_t  timerFlag=0;
+uint8_t letter=255;
+
 
 inline void init_gpio(void)
 {
@@ -87,21 +107,27 @@ inline void init_gpio(void)
 	  LED_PORT->BSRR = LED2;
 	  LED_PORT->BRR = LED2;
 
+
+}
+
+void init_general_gpio_UART(void)
+{
+	  GPIO_InitTypeDef GPIO_InitStructure;
+
 	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	  GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+//	  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+//	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	  GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
-
 
 void debug_pin_init(void)
 {
@@ -143,21 +169,23 @@ void SysTick_Handler(void)
 */
 int main(void)
 {
+
+
   uint32_t ii = 0;
-  uint8_t letter=35;
+
   static RCC_ClocksTypeDef RCC_Clocks;
   USART_InitTypeDef USART_2_InitStruct;
-  USART_2_InitStruct.USART_BaudRate = 4800;
-  USART_2_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  NVIC_InitTypeDef NVIC_InitStructure;
+  USART_2_InitStruct.USART_BaudRate = 19200;
+  USART_2_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None ;
   USART_2_InitStruct.USART_WordLength = USART_WordLength_8b;
   USART_2_InitStruct.USART_StopBits = USART_StopBits_1;
   USART_2_InitStruct.USART_Parity = USART_Parity_No ;
   USART_2_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
 
-
   /* TODO - Add your application code here */
-  SysTick_Config(800);  /* 0.1 ms = 100us if clock frequency 12 MHz */
+  SysTick_Config(600);  /* 0.1 ms = 100us if clock frequency 12 MHz */
 
   SystemCoreClockUpdate();
   ii = SystemCoreClock;    /* This is a way to read the System core clock */
@@ -172,38 +200,47 @@ int main(void)
 
   //init for UART
   /*****/
+  init_general_gpio_UART();
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2,ENABLE);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA,ENABLE);
   GPIO_PinAFConfig(GPIOA, 2, GPIO_AF_1);
   GPIO_PinAFConfig(GPIOA, 3, GPIO_AF_1);
   USART_Init(USART2, &USART_2_InitStruct);
+  USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+
+ // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+  NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
   USART_Cmd(USART2, ENABLE);
   /****/
   while (1)
   {
+
+	  USART_SendData(USART2, letter);
 	  if (timerFlag)
 	  {
-		  ST7565R_Display_16x32_Num(10, 10, 5);
+		  //ST7565R_Clear_Screen();
+		 // ST7565R_Display_16x32_Num(10, 10, 5);
 		  timerFlag = 0;
 		  ii++;
-		  letter++;
-		  if (letter>70)
-		  letter=35;
-		  ST7565R_Display_ASCII(3, 2, letter);
-		  USART_SendData(USART2, 36);
+//		  letter ++;
+//		  if ((letter>220)||(letter<35))
+//		  letter=35;
+		  ST7565R_Display_16x32_Num(3, 2, letter);
+
 		  /* Toggle LED1 */
 		  if (ii == 1)
 		  {
 
 			  LED_PORT->BSRR = LED1;
-			  USART_SendData(USART2, 17);
 
 		  }
 		  else if (ii == 2)
 		  {
 			  ii = 0;
 			  LED_PORT->BRR = LED1;
-			  USART_SendData(USART2, 40);
 		  }
 	  }
       if(GPIO_ReadInputDataBit(KEY_PORT, KEY))
@@ -223,3 +260,20 @@ int main(void)
 }
 
 
+void USART2_IRQHandler(void)
+{
+   if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+   {
+       letter = USART_ReceiveData(USART2);
+   }
+
+   // if(USART_GetITStatus(USART1, USART_IT_TXE) != RESET)
+   // {
+   //    USART_SendData(USART1, T_Buff[T_Index++]);
+   //    if(T_Buff[T_Index-1] == 0x0d || T_Index == BUFF_SIZE)
+   //    {
+   //       USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
+   //       T_Index = 0;
+   //    }
+   // }
+}

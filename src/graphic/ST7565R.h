@@ -110,7 +110,7 @@ extern void ST7565R_Display_CN(u8 ucRow, u8 ucColumn, u8 *pucData);
 extern void ST7565R_Display_16x32_Num(u8 ucRow, u8 ucColumn, u8 ucNum);
 extern void ST7565R_Display_16x32_Num_Reverse(u8 ucRow, u8 ucColumn, u8 ucNum);
 extern void ST7565R_Display_Picture(u8 *pucData);
-
+extern void ST7565R_Write(u8 ucDatOrCmd, u8 ucData);
 extern unsigned char zhong[];
 extern unsigned char ST7565R_Picture[];
 //*****************************************************************************
