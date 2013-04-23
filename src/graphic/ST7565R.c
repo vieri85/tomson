@@ -19,10 +19,6 @@
 #define DEBUG_PIN_0 GPIO_Pin_0
 #define DEBUG_PIN_1 GPIO_Pin_1
 #define DEBUG_PORT GPIOB
-enum ST7565R_CMD_DAT
-{
-    cmd, dat
-} ST7565R_CMD, ST7565R_DAT;
 
 //*****************************************************************************
 //
@@ -238,31 +234,29 @@ void ST7565R_Init(void)
 
 
     ST7565R_GPIO_Init();
-    ST7565R_RST_L; /*复位*/
+    ST7565R_RST_L;
     ST7565R_Delay(200);
     ST7565R_RST_H;
-    //
-    //以下参数没有自己调整的必要
-    //
-    ST7565R_Write(ST7565R_CMD, 0xa3); /*软复位*/
-    ST7565R_Write(ST7565R_CMD, 0xa0); /*升压步聚1*/
-    ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0xc0); /*升压步聚2*/
-    ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0x2f); /*升压步聚3*/
-    ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0x81); /*粗调对比度，可设置范围20～27*/
-    ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0x27); /*微调对比度*/
-    ST7565R_Write(ST7565R_CMD, 0x24); /*微调对比度的值，可设置范围0～63*/
-    ST7565R_Delay(5);
-    ST7565R_Write(ST7565R_CMD, 0xaf); /*1/9偏压比（bias）*/
 
-//    ST7565R_Write(ST7565R_CMD, 0xc8); /*行扫描顺序：从上到下*/
-//    ST7565R_Write(ST7565R_CMD, 0xa0); /*列扫描顺序：从左到右*/
-//    ST7565R_Write(ST7565R_CMD, 0x40); /*起始行：从第一行开始*/
-    ST7565R_Write(ST7565R_CMD, 0xaf); /*开显示*/
 
+    ST7565R_Write(ST7565R_CMD, 163); /*LCD bias set: 1/7 */
+    ST7565R_Write(ST7565R_CMD, 161); /*ADC select: reverse */
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 192); /*Common output mode select: normal dir. */
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 47); /*Power control set to 47*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 0x81); /*Electronic volume mode set*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 30); /*Electronic volume register set to 30*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 36); /*Vo voltage regulator internal resistor set to 36*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 0x40); /*Display start line set to 0*/
+    ST7565R_Delay(5);
+    ST7565R_Write(ST7565R_CMD, 0xaf); /*LCD ON*/
+    ST7565R_Clear_Screen();
+    ST7565R_Display_ASCII(10, 64, 65); //LCD "A"
 }
 
 //*****************************************************************************
@@ -276,7 +270,7 @@ void ST7565R_Clear_Screen(void)
 {
     u8 i, j;
 
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 8; i++)
     {
 
         ST7565R_Write(ST7565R_CMD, 0xb0 + i);

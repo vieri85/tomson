@@ -47,6 +47,12 @@
 #include "stm32f0xx_flash.h"
 #include "stm32f0xx_spi.h"
 
+
+enum ST7565R_CMD_DAT
+{
+    cmd, dat
+} ST7565R_CMD, ST7565R_DAT;
+
 #define u8 uint8_t
 #define u32 uint32_t
 //
@@ -58,7 +64,7 @@
 //
 // use SPI mode ,set HARDWARE or SOFTWARE
 //
-#define SPI_MODE                SOFTWARE
+#define SPI_MODE                HARDWARE
 
 #define SPI_X                   1
 
@@ -113,6 +119,7 @@ extern void ST7565R_Display_Picture(u8 *pucData);
 extern void ST7565R_Write(u8 ucDatOrCmd, u8 ucData);
 extern unsigned char zhong[];
 extern unsigned char ST7565R_Picture[];
+extern void ST7565R_Delay(u32 uTime);
 //*****************************************************************************
 //
 //! @}

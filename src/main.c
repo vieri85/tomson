@@ -64,6 +64,7 @@
 
 /* Private function prototypes */
 void init_general_gpio_UART(void);
+uint8_t BCD_TO_DEC(uint8_t* bufor,u8 *dec);
 
 /* Private functions */
 
@@ -71,6 +72,7 @@ void init_general_gpio_UART(void);
 uint32_t timer=0;
 uint8_t  timerFlag=0;
 uint8_t letter=255;
+uint8_t new_receive = 0;
 
 
 inline void init_gpio(void)
@@ -169,9 +171,12 @@ void SysTick_Handler(void)
 */
 int main(void)
 {
-
-
+ static uint8_t k=3;
+ uint8_t i;
+  u8 dec_number=0;
+ static uint8_t bufor[3];
   uint32_t ii = 0;
+  u8 st_send_type= cmd;
 
   static RCC_ClocksTypeDef RCC_Clocks;
   USART_InitTypeDef USART_2_InitStruct;
@@ -185,7 +190,7 @@ int main(void)
 
 
   /* TODO - Add your application code here */
-  SysTick_Config(600);  /* 0.1 ms = 100us if clock frequency 12 MHz */
+  SysTick_Config(2600);  /* 0.1 ms = 100us if clock frequency 12 MHz */
 
   SystemCoreClockUpdate();
   ii = SystemCoreClock;    /* This is a way to read the System core clock */
@@ -207,8 +212,8 @@ int main(void)
   GPIO_PinAFConfig(GPIOA, 3, GPIO_AF_1);
   USART_Init(USART2, &USART_2_InitStruct);
   USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+//  USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
 
- // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
   NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
@@ -218,17 +223,91 @@ int main(void)
   while (1)
   {
 
-	  USART_SendData(USART2, letter);
+
+	  if(0 != new_receive)
+	  {
+		  if(letter == 0x0D)
+		  {
+			  for(i=0;i<3;i++)
+			  {
+				  bufor[i]=0;
+			  }
+			  k=0;
+			  USART_SendData(USART2, 0x0D);
+			  if(st_send_type == cmd)
+			  {
+			 	 USART_SendData(USART2, 0x63); //send "c"
+			  }
+			  else
+			  {
+			 	 USART_SendData(USART2, 0x64); //send "d"
+			  }
+
+		  }
+
+		  if(letter == 0x64)
+		  {
+			  st_send_type = dat;
+		  }
+		  else if(letter == 0x63)
+		  {
+			  st_send_type = cmd;
+		  }
+
+
+		  if((letter>0x29) && (letter <0x3A))
+		  {
+			if(k<3)
+			{
+
+				 bufor[k] = letter-48;
+				 ++k;
+				 USART_SendData(USART2, letter);
+			}
+
+			if(k>=3)
+			{
+
+				 if(0 == BCD_TO_DEC(bufor,&dec_number))
+				 {
+					 USART_SendData(USART2, 0x74);	//send "t"
+					 ST7565R_Delay(10);
+					 USART_SendData(USART2, dec_number);
+					 ST7565R_Write(st_send_type, dec_number);
+				 }
+				 else
+				 {
+					 USART_SendData(USART2, 0x6e);  //send "n"
+					 ST7565R_Delay(10);
+				 }
+				 USART_SendData(USART2, 0x0D); //send "enter" character
+				 ST7565R_Delay(10);
+				 if(st_send_type == cmd)
+				 {
+					 USART_SendData(USART2, 0x63); //send "c"
+				 }
+				 else
+				 {
+					 USART_SendData(USART2, 0x64); //send "d"
+				 }
+				 k=0;
+			}
+		  }
+
+
+		  new_receive = 0;
+
+	  }
+
+
 	  if (timerFlag)
 	  {
 		  //ST7565R_Clear_Screen();
 		 // ST7565R_Display_16x32_Num(10, 10, 5);
 		  timerFlag = 0;
 		  ii++;
-//		  letter ++;
-//		  if ((letter>220)||(letter<35))
-//		  letter=35;
-		  ST7565R_Display_16x32_Num(3, 2, letter);
+
+		  //ST7565R_Display_16x32_Num(3, 2, 5);
 
 		  /* Toggle LED1 */
 		  if (ii == 1)
@@ -265,7 +344,9 @@ void USART2_IRQHandler(void)
    if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
    {
        letter = USART_ReceiveData(USART2);
+       new_receive = 1;
    }
+
 
    // if(USART_GetITStatus(USART1, USART_IT_TXE) != RESET)
    // {
@@ -276,4 +357,19 @@ void USART2_IRQHandler(void)
    //       T_Index = 0;
    //    }
    // }
+}
+
+uint8_t BCD_TO_DEC(uint8_t* bufor,u8 *dec)
+{
+	u8 ret=1;
+	uint16_t temp=0;
+		temp=bufor[0] * 100;
+		temp+=bufor[1]*10;
+		temp+=bufor[2];
+		if(temp<256)
+		{
+			*dec = (u8)temp;
+			ret=0;
+		}
+	return ret;
 }
